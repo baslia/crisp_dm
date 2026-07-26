@@ -13,7 +13,7 @@ preprocessing pipeline, standard evaluation plots) so the notebooks can focus
 on the *reasoning* of each phase rather than plumbing.
 """
 
-from . import data_understanding, data_preparation, evaluation
+from . import data_preparation, data_understanding, evaluation
 
 __all__ = ["data_understanding", "data_preparation", "evaluation"]
 __version__ = "0.1.0"
