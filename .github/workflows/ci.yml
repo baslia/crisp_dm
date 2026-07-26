@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tooling
+        run: pip install nbstripout nbformat ruff
+
+      - name: Notebooks must have their outputs stripped
+        run: |
+          # Fails if any committed notebook still contains cell outputs.
+          find usecases -name '*.ipynb' -print0 \
+            | xargs -0 -I{} nbstripout --verify "{}"
+
+      - name: Notebooks must be valid nbformat
+        run: |
+          python - <<'PY'
+          import glob, nbformat
+          for f in glob.glob("usecases/*.ipynb"):
+              nbformat.validate(nbformat.read(f, as_version=4))
+              print("valid:", f)
+          PY
+
+      - name: Lint the crispdm package
+        run: ruff check crispdm
