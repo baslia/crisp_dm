@@ -1,4 +1,22 @@
+# IDE
 .idea
-data
-models
+.vscode
+
+# Data & trained artefacts (kept out of version control — see README for download links)
+data/
+models/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Notebook output cache (belt-and-suspenders alongside nbstripout)
+*.nbconvert.ipynb
+
+# OS
 .DS_Store
