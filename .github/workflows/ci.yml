@@ -16,21 +16,28 @@ jobs:
           python-version: "3.11"
 
       - name: Install tooling
-        run: pip install nbstripout nbformat ruff
+        run: pip install nbformat ruff
 
-      - name: Notebooks must have their outputs stripped
-        run: |
-          # Fails if any committed notebook still contains cell outputs.
-          find usecases -name '*.ipynb' -print0 \
-            | xargs -0 -I{} nbstripout --verify "{}"
-
-      - name: Notebooks must be valid nbformat
+      - name: Notebooks must be valid and output-free
         run: |
           python - <<'PY'
-          import glob, nbformat
-          for f in glob.glob("usecases/*.ipynb"):
-              nbformat.validate(nbformat.read(f, as_version=4))
-              print("valid:", f)
+          import glob, sys, nbformat
+          failed = False
+          for f in sorted(glob.glob("usecases/*.ipynb")):
+              nb = nbformat.read(f, as_version=4)
+              nbformat.validate(nb)  # structural validity
+              dirty = [
+                  i for i, c in enumerate(nb.cells)
+                  if c.cell_type == "code"
+                  and (c.get("outputs") or c.get("execution_count") is not None)
+              ]
+              if dirty:
+                  failed = True
+                  print(f"::error file={f}::has outputs in cells {dirty} "
+                        f"— run `nbstripout {f}` before committing")
+              else:
+                  print(f"ok: {f}")
+          sys.exit(1 if failed else 0)
           PY
 
       - name: Lint the crispdm package
